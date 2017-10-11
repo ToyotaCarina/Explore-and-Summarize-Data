@@ -19,16 +19,21 @@ library(gridExtra)
 library(GGally)
 library(scales)
 library(memisc)
+library(psych)
+
 ```
 
 ```{r echo=FALSE, Load_the_Data}
+
 # Load the Data
 redwine <- read.csv('wineQualityReds.csv', header = T)
+
 ```
 
 This data set contains 1,599 red wines with 11 variables on the
 chemical properties of the wine. At least 3 wine experts rated the quality of
 each wine, providing a rating between 0 (very bad) and 10 (very excellent).
+"Which chemical properties influence the quality of red wines?" is the question I will try to find answer to.
 
 # Univariate Plots Section
 
@@ -41,25 +46,34 @@ just to help you get started.
 
 First 10 rows from dataset
 ```{r echo=FALSE, Univariate_Plots}
+
 head(redwine, 10)
+
 ```
 
 Dimensions of the dataset 
 ```{r echo=FALSE}
+
 dim(redwine)
+
 ```
 
 Dataset stucture
 ```{r echo=FALSE}
+
 str(redwine)
+
 ```
 
 Dataset summary
 ```{r echo=FALSE}
+
 summary(redwine)
+
 ```
 
 ```{r echo=FALSE}
+
 p1 <- ggplot(aes(x=fixed.acidity), data=redwine) + 
   geom_histogram(binwidth=0.3, color = I('black'), fill=  I('#673147'))
 p2 <- ggplot(aes(x=volatile.acidity), data=redwine) + 
@@ -67,6 +81,7 @@ p2 <- ggplot(aes(x=volatile.acidity), data=redwine) +
 p3 <- ggplot(aes(x=citric.acid), data=redwine) + 
   geom_histogram(bins = 150, color = I('black'), fill=  I('#FFF44F'))
 grid.arrange(p1, p2, p3, ncol = 1)
+
 ```
 
 The principal organic acids found in grapes are tartaric, malic; to a small 
@@ -79,16 +94,18 @@ fault. Citric acid increases acidity and gives a "fresh" flavor. There are over
 150 wines that doesn't conatin citric acid at all. That is a normal situastion
 because many types of red wines do not contain any citric acid.
 
-```{r}
+```{r echo=FALSE}
+
 p1 <- ggplot(aes(x=free.sulfur.dioxide), data=redwine) + geom_histogram(bins = 60,  color = I('black'), fill = I('white'))
 p2 <- ggplot(aes(x=total.sulfur.dioxide), data=redwine) + geom_histogram(bins = 60,  color = I('black'), fill = I('white'))
 grid.arrange(p1, p2, ncol = 1)
+
 ```
  
 Sulfur dioxide serves as an antibiotic and antioxidant, protecting wine from
 spoilage by bacteria and oxidation. Its antimicrobial action also helps to 
 minimize volatile acidity. Nose will be able to detect SO2 in wine in the range
-of 15-40 ppm or higher dosage.
+of 15-40 ppm or higher dosage. If wine contains too much sulphurs, person can be able to taste it and that's nasty taste. 
 
 There is no wine in dataset that are totally free for sulfur dioxide. Naturally
 occurring sulfites are generated in very small amounts ranging from 6 to 40 ppm.
@@ -96,59 +113,100 @@ Most of wines in collection have a free sulfur dioxide under 21 mg / dm^3 and a
 total sulfur dioxide under 62 mg / dm^3. There are two wines that have a very
 hign total suflur dixide compared to others.
 
-```{r}
+```{r echo=FALSE}
+
 p1 <- ggplot(aes(x=residual.sugar), data=redwine) + 
-        geom_histogram()
-p2 <- ggplot(aes(x=chlorides), data=redwine) + 
-        geom_histogram()
-p3 <- ggplot(aes(x=density), data=redwine) + 
-        geom_histogram()
-p4 <- ggplot(aes(x=pH), data=redwine) +
-        geom_histogram(binwidth=0.02, color= I('black'), fill = I('#7F1734'))
+        geom_histogram(binwidth=0.5, color= I('black'), fill = I('#7F1734'))
+p2 <- ggplot(aes(x=residual.sugar), data=redwine) + 
+        geom_histogram(bins = 30,color= I('black'), fill = I('#7F1734')) +
+        scale_x_log10()
+p3 <- ggplot(aes(x=chlorides), data=redwine) + 
+        geom_histogram(bins = 30, color= I('black'), fill = I('#7F1734'))
+p4 <- ggplot(aes(x=chlorides), data=redwine) +
+        geom_histogram(binwidth=0.05, color= I('black'), fill = I('#7F1734')) +
+        scale_x_log10()
 p5 <- ggplot(aes(x=sulphates), data=redwine) + 
-        geom_histogram()
-p6 <- ggplot(aes(x=alcohol), data=redwine) + 
-        geom_histogram()
+        geom_histogram(bins = 30, color= I('black'), fill = I('#7F1734'))
+p6 <- ggplot(aes(x=sulphates), data=redwine) + 
+        geom_histogram(bins = 30, color= I('black'), fill = I('#7F1734')) +
+        scale_x_log10()
 grid.arrange(p1, p2, p3, p4, p5, p6, ncol = 2)
+
 ```
 
+Residual Sugar is the level of glucose and fructose (grape sugars) that are not converted into alcohol during fermentation.
+Sodium chloride shows amount of salt in the wine.
+Potassium sulphate is a "wine stabilizer". It has a bitter, salty taste. 
+Residual Sugar, chlorides and sulphates are right skewed, that's why log10 transformation is used.
 
-```{r}
+
+```{r echo=FALSE, fig.width=7, fig.height=7}
+
+p1 <- ggplot(aes(x=alcohol), data=redwine) + 
+        geom_histogram(binwidth=0.25, color= I('black'), fill = I('#7F1734'))
+p2 <- ggplot(aes(x=density), data=redwine) + 
+        geom_histogram(bins = 30, color= I('black'), fill = I('#7F1734'))
+p3 <- ggplot(aes(x=pH), data=redwine) +
+        geom_histogram(binwidth=0.05, color= I('black'), fill = I('#7F1734'))
+grid.arrange(p1, p2, p3, ncol = 1)
+
+```
+Alcohol directly correlates to the ripeness (sugar content) of grapes. As grapes
+ferment, the sugar converts to alcohol.
+
+Density in wine is generally used as a measure of the conversion of sugar to
+alcohol.
+
+Winemakers use pH as a way to measure ripeness in relation to acidity. Low pH
+wines will taste tart and crisp, while higher pH wines are more susceptible to
+bacterial growth. Most wine pH's fall around 3 or 4. pH from 3.3 to 3.6 is best
+for red wines. Most wines in dataset has pH from 3.2 to 3.4.
+
+Density and pH are distributed normally.
+
+```{r echo=FALSE}
 ggplot(aes(x=quality), data=redwine) + 
   scale_x_continuous(limits = c(0, 10), breaks = seq(1, 10, 1)) +
   geom_histogram(binwidth=0.5, fill = I('#7F1734'))
-
 ```
 
-There is no wine, that have got worst or best scores. Most of tested wines have been rated
-as above average by experts.
-
-
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
+There is no wine, that have got worst or best scores. Most of tested wines have
+been rated by experts as average.
 
 # Univariate Analysis
 
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
-
 ### What is the structure of your dataset?
+Dataset contains 1599 red wines with 11 variables on the chemical properties of
+the wine, such as fixed acidity, volatile acidity, citric acid, residual sugar,
+sodium chloride,  free and total sulfur dioxides, density, pH, sulphates and alcohol.
+Dataset also includes a quality rating of wine provided by experts.
+Dataset doesn't contain any missing values. All columns are numerical.
 
 ### What is/are the main feature(s) of interest in your dataset?
+I would like to determine which properties influence the quality of red wines most.
+The main features of interest is quality.
 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
-
-### Did you create any new variables from existing variables in the dataset?
+I can assume that acidity, alcohol and sugar influence the quality of red wine.
+Volatile acidity is responsible for the sour taste of vinegar.
+Citric acid gives a "fresh" flavor.
+Sugar gives sweetnees.
+It also could be sulfur dioxide, because high level of it can be detected by nose.
+Or sulphate, because of bitter, salty taste.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
 
+Fixed and volatile acidity plots are right skewed, with some outliers with high amount of acids.
+Citric acid histogram have 3 peaks: 0, 0.25 and 0.5 g/dm^3. Peak with 0 g/dm^3 if citric acid are highest. That can be explain  by a fact that some wines doesn't contain any citric acid at all.
+
+Free and total sulful dioxide plots are right skrewed too. Free sulfur dioxide distribution have some outliers for values from 66-72. And Total sulfur dioxde have 2 outliers for value near 300 mg/dm^3.
+
+Residual Sugar, chlorides and sulphates plots are right skewed and were log-transformed.
+Distribution of pH and density is normal.
+Since data is clean and does not contain any NA valus, I have not done any operation on data.
 
 # Bivariate Plots Section
 
@@ -158,7 +216,10 @@ yourself to relationships between a main output feature and one of the
 supporting variables. Try to look at relationships between supporting variables
 as well.
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots, fig.height= 8, fig.width=8}
+#ggpairs(redwine, columns = 2:13)
+pairs.panels(redwine[2:13]) 
+#[c(3,4,5,8,12,13)]
 
 ```
 
